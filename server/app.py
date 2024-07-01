@@ -26,22 +26,14 @@ def all_users():
     users_list = []
 
     for user in users:
-        user_dict = {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "created_at": user.created_at
-        }
-        users_list.append(user_dict)
+        users_list.append(user.to_dict())
 
     body = {
         "count": len(users_list),
         "users": users_list
     }
 
-    response = make_response(body, 200)
-
-    return response
+    return make_response(body, 200)
 
 
 @app.route('/users/<int:id>')
@@ -49,12 +41,7 @@ def user_by_id(id):
     user = User.query.filter_by(id=id).first()
 
     if user:
-        body = {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "created_at": user.created_at
-        }
+        body = user.to_dict()
         status = 200
     else:
         body = {
