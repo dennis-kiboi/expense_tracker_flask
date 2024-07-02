@@ -1,5 +1,6 @@
-from flask import Flask, make_response, request
+from flask import Flask, make_response, request, jsonify
 from flask_migrate import Migrate
+from flask_restful import Api, Resource
 
 from models import db, User, Category
 
@@ -14,15 +15,22 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
+api = Api(app)
 
-@app.route('/')
-def index():
-    return "<h1>Expense Tracker App</h1>"
+class Index(Resource):
+    def get(self):
+        body = {
+            "index": "Welcome to the Expense Tracker App"
+        }
 
+        response = make_response(body, 200)
 
-@app.route('/users', methods=['GET', 'POST'])
-def users():
-    if request.method == 'GET':
+        return response
+    
+api.add_resource(Index, '/')
+
+class Users(Resource):
+    def get(self):
         users = User.query.all()
         users_list = []
 
@@ -35,11 +43,11 @@ def users():
         }
 
         return make_response(body, 200)
-    
-    elif request.method == 'POST':
+
+    def post(self):
         new_user = User(
-            username=request.form.get("username"),
-            email=request.form.get("email")
+            username=request.json.get("username"),
+            email=request.json.get("email")
         )
 
         db.session.add(new_user)
@@ -49,53 +57,57 @@ def users():
 
         return response
 
+api.add_resource(Users, '/users')
 
-@app.route('/users/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
-def user_by_id(id):
-    user = User.query.filter_by(id=id).first()
+class UsersByID(Resource):
+    def get(self, id):
+        user = User.query.filter_by(id=id).first()
 
-    if user == None:
-        body = {
-            "message": "This record does not exist in our database. Please try again."
-        }
-        response = make_response(body, 404)
+        if user == None:
+            body = {
+                "message": "This record does not exist in our database. Please try again."
+            }
+            response = make_response(body, 404)
 
-        return response
-    
-    else:
-        if request.method == 'GET':
+            return response
+        else:
             user_dict = user.to_dict()
 
             response = make_response(user_dict, 200)
 
             return response
 
-        elif request.method == 'PATCH':
-            for attr in request.json:
+    def patch(self, id):
+        user = User.query.filter_by(id=id).first()
+
+        for attr in request.json:
                 setattr(user, attr, request.json.get(attr))
 
-            db.session.add(user)
-            db.session.commit()
+        db.session.add(user)
+        db.session.commit()
 
-            user_dict = user.to_dict()
+        user_dict = user.to_dict()
 
-            response = make_response(user_dict, 200)
+        response = make_response(user_dict, 200)
 
-            return response
-        
-        elif request.method == 'DELETE':
-            db.session.delete(user)
-            db.session.commit()
+        return response
 
-            body = {
-                "delete_successful": True,
-                "message": "User deleted."
-            }
+    def delete(self, id):
+        user = User.query.filter_by(id=id).first()
 
-            response = make_response(body, 200)
+        db.session.delete(user)
+        db.session.commit()
 
-            return response
+        body = {
+            "delete_successful": True,
+            "message": "User deleted."
+        }
 
+        response = make_response(body, 200)
+
+        return response
+
+api.add_resource(UsersByID, '/users/<int:id>')
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)

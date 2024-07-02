@@ -76,3 +76,4 @@ class Transaction(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Transaction {self.id}: {self.description}, {self.amount}>"
+    
