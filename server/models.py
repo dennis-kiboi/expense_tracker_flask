@@ -34,9 +34,9 @@ class Category(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     user = db.relationship("User", back_populates="categories")
-    transactions = db.relationship("Transaction", back_populates="category")
+    # transactions = db.relationship("Transaction", back_populates="category")
 
-    serialize_rules = ('-user.categories', '-transactions.category')
+    serialize_rules = ('-user.categories',)
 
     def __repr__(self):
         return f"<Category {self.id}: {self.name}>"
@@ -51,9 +51,9 @@ class Wallet(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     user = db.relationship("User", back_populates="wallets")
-    transactions = db.relationship("Transaction", back_populates="wallet")
+    # transactions = db.relationship("Transaction", back_populates="wallet")
 
-    serialize_rules = ('-user.wallets', '-transactions.wallet')
+    serialize_rules = ('-user.wallets',)
 
     def __repr__(self):
         return f"<Wallet {self.id}: {self.name}>"
@@ -69,8 +69,8 @@ class Transaction(db.Model, SerializerMixin):
     date = db.Column(db.DateTime, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
 
-    category = db.relationship("Category", back_populates="transactions")
-    wallet = db.relationship("Wallet", back_populates="transactions")
+    category = db.relationship("Category") # , back_populates="transactions")
+    wallet = db.relationship("Wallet") # , back_populates="transactions")
 
     serialize_rules = ('-category.transactions', '-wallet.transactions')
 
