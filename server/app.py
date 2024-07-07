@@ -1,6 +1,7 @@
 from flask import Flask, make_response, request, jsonify
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
+from werkzeug.exceptions import NotFound
 
 from models import db, User, Category
 
@@ -17,6 +18,7 @@ db.init_app(app)
 
 api = Api(app)
 
+
 class Index(Resource):
     def get(self):
         body = {
@@ -26,8 +28,10 @@ class Index(Resource):
         response = make_response(body, 200)
 
         return response
-    
+
+
 api.add_resource(Index, '/')
+
 
 class Users(Resource):
     def get(self):
@@ -57,7 +61,9 @@ class Users(Resource):
 
         return response
 
+
 api.add_resource(Users, '/users')
+
 
 class UsersByID(Resource):
     def get(self, id):
@@ -81,7 +87,7 @@ class UsersByID(Resource):
         user = User.query.filter_by(id=id).first()
 
         for attr in request.json:
-                setattr(user, attr, request.json.get(attr))
+            setattr(user, attr, request.json.get(attr))
 
         db.session.add(user)
         db.session.commit()
@@ -107,7 +113,23 @@ class UsersByID(Resource):
 
         return response
 
+
 api.add_resource(UsersByID, '/users/<int:id>')
+
+
+# @app.errorhandler(NotFound)
+def handle_not_found(e):
+
+    response = make_response(
+        "Not Found: The requested resource does not exist.",
+        404
+    )
+
+    return response
+
+
+app.register_error_handler(404, handle_not_found)
+
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
