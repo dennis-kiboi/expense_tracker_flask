@@ -2,8 +2,9 @@ from flask import Flask, make_response, request, jsonify
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from werkzeug.exceptions import NotFound
+from flask_cors import CORS
 
-from models import db, User, Category
+from models import db, User, Category, Transaction
 
 # Initialize the flask application
 app = Flask(__name__)
@@ -11,6 +12,8 @@ app = Flask(__name__)
 # Configure the database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+CORS(app) # Allow requests from all origins
 
 migrate = Migrate(app, db)
 
@@ -116,8 +119,21 @@ class UsersByID(Resource):
 
 api.add_resource(UsersByID, '/users/<int:id>')
 
+class Transactions(Resource):
+    def get(self):
+        transactions_list = [transaction.to_dict() for transaction in Transaction.query.all()]
 
-# @app.errorhandler(NotFound)
+        body = {
+            "count": len(transactions_list),
+            "transactions": transactions_list
+        }
+
+        return make_response(body, 200)
+    
+api.add_resource(Transactions, '/transactions')
+
+
+@app.errorhandler(NotFound)
 def handle_not_found(e):
 
     response = make_response(

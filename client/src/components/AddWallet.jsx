@@ -37,7 +37,7 @@ export default function AddWallet() {
 								<p className="text-lg">Add a Wallet</p>
 							</ModalHeader>
 							<ModalBody>
-								<WalletForm />
+								<WalletForm onClose={onClose} />
 							</ModalBody>
 							<ModalFooter>
 								<Button
@@ -48,9 +48,9 @@ export default function AddWallet() {
 								>
 									Close
 								</Button>
-								<Button color="primary" type="submit" size="sm">
+								{/* <Button color="primary" type="submit" size="sm">
 									Add Wallet
-								</Button>
+								</Button> */}
 							</ModalFooter>
 						</>
 					)}
