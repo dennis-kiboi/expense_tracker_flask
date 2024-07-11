@@ -4,7 +4,7 @@ from flask_restful import Api, Resource
 from werkzeug.exceptions import NotFound
 from flask_cors import CORS
 
-from models import db, User, Category, Transaction
+from models import db, User, Category, Transaction, Wallet
 
 # Initialize the flask application
 app = Flask(__name__)
@@ -131,6 +131,23 @@ class Transactions(Resource):
         return make_response(body, 200)
     
 api.add_resource(Transactions, '/transactions')
+
+class Wallets(Resource):
+    def post(self):
+        new_wallet = Wallet(
+            user_id=request.json.get("user_id"),
+            name=request.json.get("name"),
+            balance=request.json.get("balance")
+        )
+
+        db.session.add(new_wallet)
+        db.session.commit()
+
+        response = make_response(new_wallet.to_dict(), 201)
+
+        return response
+    
+api.add_resource(Wallets, '/wallets')
 
 
 @app.errorhandler(NotFound)
